@@ -1,6 +1,6 @@
 # rpi-kernel_5.10
 KERN_VER=5.10.14
-PKG_URL="https://github.com/raspberrypi/linux/archive/656dc8295f67e3c4c475f76f10426fc358a952d0.tar.gz"
+PKG_URL="https://github.com/raspberrypi/linux/archive/623ca2ba45d86eb1b0323637330295c3f8d93c76.tar.gz"
 BUILD_PROCESS=kernelbuild
 INST_CMD="INSTALL_MOD_STRIP=1"
 
@@ -9,10 +9,10 @@ case ${KERN_ARCH:-none} in
 		PKG_POSTBUILD+="
 			for p in broadcom
 			do
-				if [ -d ${BIN_PATH}/boot/\${p} ]
+				if [ -d ${PKG_PKGPATH}/boot/\${p} ]
 				then
-					mv -f ${BIN_PATH}/boot/\${p}/* ${BIN_PATH}/boot/
-					rmdir ${BIN_PATH}/boot/\${p}
+					mv -f ${PKG_PKGPATH}/boot/\${p}/* ${PKG_PKGPATH}/boot/
+					rmdir ${PKG_PKGPATH}/boot/\${p}
 				fi
 			done"
 		;;
