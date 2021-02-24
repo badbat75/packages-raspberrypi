@@ -1,0 +1,13 @@
+# pi-bluetooth_0.1.15+63b706a
+PKG_URL="https://github.com/RPi-Distro/pi-bluetooth/archive/63b706ae6311d8b408e7797c14f5117f8a9432d8.tar.gz"
+BUILD_PROCESS=downloadonly
+PKG_DEPS="raspberrypi/rpi-config_0.1 lfs/bluez_5.55"
+PKG_PREBUILD="install -d -m0755 ${PKG_PKGPATH}\${BUILD_PREFIX}/bin
+    install -d -m0755 ${PKG_PKGPATH}\${BUILD_SYSCONFDIR}/systemd/system
+    install -d -m0755 ${PKG_PKGPATH}/lib/udev/rules.d
+    install -m 0755 -D usr/bin/btuart ${PKG_PKGPATH}\${BUILD_PREFIX}/bin/
+    install -m 0755 -D usr/bin/bthelper ${PKG_PKGPATH}\${BUILD_PREFIX}/bin/
+    install -m 0644 -D debian/pi-bluetooth.hciuart.service ${PKG_PKGPATH}\${BUILD_SYSCONFDIR}/systemd/system/hciuart.service
+    install -m 0644 -D debian/pi-bluetooth.bthelper@.service ${PKG_PKGPATH}\${BUILD_SYSCONFDIR}/systemd/system/bthelper@.service
+    install -m 0644 -D lib/udev/rules.d/90-pi-bluetooth.rules ${PKG_PKGPATH}/lib/udev/rules.d/90-pi-bluetooth.rules
+    systemctl --root=${PKG_PKGPATH} enable hciuart"
