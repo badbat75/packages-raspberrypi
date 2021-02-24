@@ -1,6 +1,6 @@
 # rpi-firmware_1.20210201
 PKG_URL="https://github.com/raspberrypi/firmware/archive/1.20210201.tar.gz"
 BUILD_PROCESS=downloadonly
-PKG_PREBUILD="[ ! -d ${BIN_PATH}/boot ] && mkdir ${BIN_PATH}/boot || true
+PKG_PREBUILD="mkdir -pv ${PKG_PKGPATH}/boot
 	cp -fv boot/{bootcode.bin,fixup4cd.dat,fixup4.dat,fixup4db.dat,fixup4x.dat,fixup_cd.dat,fixup.dat,fixup_db.dat,fixup_x.dat,\
-LICENCE.broadcom,start4cd.elf,start4db.elf,start4.elf,start4x.elf,start_cd.elf,start_db.elf,start.elf,start_x.elf} ${BIN_PATH}/boot"
+LICENCE.broadcom,start4cd.elf,start4db.elf,start4.elf,start4x.elf,start_cd.elf,start_db.elf,start.elf,start_x.elf} ${PKG_PKGPATH}/boot"
