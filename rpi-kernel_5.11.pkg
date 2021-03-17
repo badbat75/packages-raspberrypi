@@ -1,0 +1,30 @@
+# rpi-kernel_5.11
+KERN_VER=5.11.6
+PKG_URL="https://github.com/raspberrypi/linux/archive/dfc8cb89fbb8ce43eb8a3a3179d4e9de08055b03.tar.gz"
+BUILD_PROCESS=kernelbuild
+INST_CMD="INSTALL_MOD_STRIP=1"
+
+case ${KERN_ARCH:-none} in
+	arm64)
+		PKG_POSTBUILD+="
+			for p in broadcom
+			do
+				if [ -d ${PKG_PKGPATH}/boot/\${p} ]
+				then
+					mv -f ${PKG_PKGPATH}/boot/\${p}/* ${PKG_PKGPATH}/boot/
+					rmdir ${PKG_PKGPATH}/boot/\${p}
+				fi
+			done"
+		;;
+esac
+case ${WITH_EXTOPTS:-1} in
+	yes|1)
+		CONF_FLAGS+=" -e BTRFS_FS -e F2FS_FS"
+		;;
+esac
+case ${WITH_RT:-0} in
+	yes|1)
+	# Enable preemptive/realtime kernel
+		CONF_FLAGS+=" -d CONFIG_PREEMPT_NONE -d CONFIG_PREEMPT_VOLUNTARY -e CONFIG_PREEMPT"
+		;;
+esac
