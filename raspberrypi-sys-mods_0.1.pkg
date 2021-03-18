@@ -2,4 +2,4 @@
 PKG_URL="https://github.com/RPi-Distro/raspberrypi-sys-mods/archive/master.tar.gz"
 BUILD_PROCESS=downloadonly
 PKG_PREBUILD="install -d -m755 ${PKG_PKGPATH}/etc/udev/rules.d
-    install -m644 etc.armhf/udev/rules.d/99-com.rules ${PKG_PKGPATH}/etc/udev/rules.d/"
+    install -m644 etc.arm/udev/rules.d/99-com.rules ${PKG_PKGPATH}/etc/udev/rules.d/"
