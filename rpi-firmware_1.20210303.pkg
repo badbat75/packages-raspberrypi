@@ -1,5 +1,5 @@
-# rpi-firmware_1.20210201
-PKG_URL="https://github.com/raspberrypi/firmware/archive/1.20210201.tar.gz"
+# rpi-firmware_1.20210303
+PKG_URL="https://github.com/raspberrypi/firmware/archive/1.20210303.tar.gz"
 BUILD_PROCESS=downloadonly
 PKG_PREBUILD="mkdir -pv ${PKG_PKGPATH}/boot
 	cp -fv boot/{bootcode.bin,fixup4cd.dat,fixup4.dat,fixup4db.dat,fixup4x.dat,fixup_cd.dat,fixup.dat,fixup_db.dat,fixup_x.dat,\

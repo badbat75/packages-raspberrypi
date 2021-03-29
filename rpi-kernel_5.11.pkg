@@ -1,6 +1,6 @@
 # rpi-kernel_5.11
-KERN_VER=5.11.8
-PKG_URL="https://github.com/raspberrypi/linux/archive/f68df2661d82a2c81d8b979f5fcf3dd8b12d5e61.tar.gz"
+KERN_VER=5.11.10
+PKG_URL="https://github.com/raspberrypi/linux/archive/88a484a356bf576bcbec975ad9a4f1b95259e778.tar.gz"
 BUILD_PROCESS=kernelbuild
 INST_CMD="INSTALL_MOD_STRIP=1"
 
