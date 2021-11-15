@@ -1,5 +1,5 @@
-# raspberrypi-sys-mods_0.1
-PKG_URL="https://github.com/RPi-Distro/raspberrypi-sys-mods/archive/master.tar.gz"
+# raspberrypi-sys-mods_20211005
+PKG_URL="https://github.com/RPi-Distro/raspberrypi-sys-mods/archive/22af5d1c65f3ac8c6f0ba4bdb8bdaf4184b73464.tar.gz"
 BUILD_PROCESS=downloadonly
 PKG_PREBUILD="install -d -m755 ${PKG_PKGPATH}/etc/udev/rules.d
     install -m644 etc.arm/udev/rules.d/99-com.rules ${PKG_PKGPATH}/etc/udev/rules.d/"
