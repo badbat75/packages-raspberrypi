@@ -1,8 +1,9 @@
-# raspberrypi-sys-mods_20211005
-PKG_URL="https://github.com/RPi-Distro/raspberrypi-sys-mods/archive/22af5d1c65f3ac8c6f0ba4bdb8bdaf4184b73464.tar.gz"
+# raspberrypi-sys-mods
+PKG_SUFFIX=".20220224"
+PKG_URL="https://github.com/RPi-Distro/raspberrypi-sys-mods/archive/46ae4208397d662fc4f5d0cc9acc85395f852af1.tar.gz"
 BUILD_PROCESS=downloadonly
 PKG_PREBUILD="install -d -m755 ${PKG_PKGPATH}/etc/udev/rules.d
-    install -m644 etc.arm/udev/rules.d/99-com.rules ${PKG_PKGPATH}/etc/udev/rules.d/
+    install -m644 etc.armhf/udev/rules.d/99-com.rules ${PKG_PKGPATH}/etc/udev/rules.d/
     install -d -m755 ${PKG_PKGPATH}/lib/systemd/system
     install -v -D -m644 debian/raspberrypi-sys-mods.apply_noobs_os_config.service ${PKG_PKGPATH}/lib/systemd/system/apply_noobs_os_config.service
     install -v -D -m644 debian/raspberrypi-sys-mods.regenerate_ssh_host_keys.service ${PKG_PKGPATH}/lib/systemd/system/regenerate_ssh_host_keys.service
