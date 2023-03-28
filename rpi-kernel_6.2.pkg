@@ -1,0 +1,42 @@
+# rpi-kernel_6.2
+PKG_SUFFIX=.8
+PKG_URL="https://github.com/raspberrypi/linux/archive/ac2e77f84a6a02c07f094f0857bec98de4e8a03c.tar.gz"
+PKG_DEPS="lfs/elfutils:cross lfs/dracut"
+BUILD_PROCESS=kernelbuild
+PKG_MAKEVARS="INSTALL_MOD_STRIP=1"
+CONF_FLAGS="-d WERROR"
+### To enable systemd oom support
+CONF_FLAGS+=" -e MEMCG -e PSI"
+### To enable systemd iptables support
+CONF_FLAGS+=" -e BPF_SYSCALL -e CGROUP_BPF"
+### To enable BFQ scheduler
+CONF_FLAGS+=" -e IOSCHED_BFQ -e BFQ_GROUP_IOSCHED"
+### To enable BTRFS and F2FS at boot
+CONF_FLAGS+=" -m BTRFS_FS -e BTRFS_FS_POSIX_ACL"
+CONF_FLAGS+=" -m F2FS_FS -e F2FS_FS_SECURITY -e F2FS_FS_COMPRESSION"
+
+case ${WITH_RT:-0} in
+	yes|1)
+	# Enable preemptive/realtime kernel
+		CONF_FLAGS+=" -d PREEMPT_NONE -d PREEMPT_VOLUNTARY -e PREEMPT"
+		;;
+esac
+
+case ${KERNEL_ARCH:-none} in
+	arm)
+		PKG_PREBUILD="sed -i '/select TRACE_IRQFLAGS_SUPPORT if/a \        select ARCH_SUPPORTS_LTO_CLANG \n        select ARCH_SUPPORTS_LTO_CLANG_THIN' arch/arm/Kconfig"
+		;;
+	arm64)
+		PKG_POSTBUILD+="
+			for p in broadcom
+			do
+				if [ -d ${PKG_PKGPATH}/boot/\${p} ]
+				then
+					mv -f ${PKG_PKGPATH}/boot/\${p}/* ${PKG_PKGPATH}/boot/
+					rmdir ${PKG_PKGPATH}/boot/\${p}
+				fi
+			done"
+		;;
+esac
+PKG_KERNEL_INITRAMFS=1
+PKG_KERNEL_INITRAMFS_DRIVERS=

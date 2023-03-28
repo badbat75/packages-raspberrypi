@@ -1,6 +1,6 @@
 # raspberrypi-sys-mods
-PKG_SUFFIX=".20220224"
-PKG_URL="https://github.com/RPi-Distro/raspberrypi-sys-mods/archive/46ae4208397d662fc4f5d0cc9acc85395f852af1.tar.gz"
+PKG_SUFFIX=".20221019"
+PKG_URL="https://github.com/RPi-Distro/raspberrypi-sys-mods/archive/e44e4546a786dae68a053b822d5af14b2eea99b4.tar.gz"
 BUILD_PROCESS=downloadonly
 PKG_PREBUILD="install -d -m755 ${PKG_PKGPATH}/etc/udev/rules.d
     install -m644 etc.armhf/udev/rules.d/99-com.rules ${PKG_PKGPATH}/etc/udev/rules.d/
@@ -13,6 +13,10 @@ PKG_PREBUILD="install -d -m755 ${PKG_PKGPATH}/etc/udev/rules.d
     ln -s /lib/systemd/system/rpi-display-backlight.service ${PKG_PKGPATH}/etc/systemd/system/multi-user.target.wants/rpi-display-backlight.service
     ln -s /lib/systemd/system/regenerate_ssh_host_keys.service ${PKG_PKGPATH}/etc/systemd/system/multi-user.target.wants/regenerate_ssh_host_keys.service
     ln -s /lib/systemd/system/sshswitch.service ${PKG_PKGPATH}/etc/systemd/system/multi-user.target.wants/sshswitch.service
-    install -d -m755 ${PKG_PKGPATH}/etc/sudoers.d
-    echo 'pi ALL=(ALL) NOPASSWD: ALL' > ${PKG_PKGPATH}/etc/sudoers.d/010_pi-nopasswd
+    #install -d -m755 ${PKG_PKGPATH}/etc/sudoers.d
+    #echo 'pi ALL=(ALL) NOPASSWD: ALL' > ${PKG_PKGPATH}/etc/sudoers.d/010_pi-nopasswd
    "
+PKG_POSTINSTALL="groupadd --system i2c
+groupadd --system spi
+groupadd --system gpio
+systemctl disable regenerate_ssh_host_keys.service apply_noobs_os_config"

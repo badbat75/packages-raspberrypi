@@ -1,9 +1,9 @@
 # raspberrypi-net-mods
-PKG_SUFFIX=".2021110"
-PKG_URL="https://github.com/RPi-Distro/raspberrypi-net-mods/archive/30ab0def6af69f16e9d248122aca8db02ca4e9e9.tar.gz"
+PKG_SUFFIX=".20220823"
+PKG_URL="https://github.com/RPi-Distro/raspberrypi-net-mods/archive/8021bb1386a7bf2e8f8c5c95e97a51bce9f40b72.tar.gz"
 BUILD_PROCESS=downloadonly
 PKG_PREBUILD="find etc -type f -exec install -v -D -m644 \"{}\" \"${PKG_PKGPATH}/{}\" \;
     install -v -D -m644 debian/raspberrypi-net-mods.service ${PKG_PKGPATH}/lib/systemd/system/raspberrypi-net-mods.service
     install -d ${PKG_PKGPATH}/etc/systemd/system/multi-user.target.wants
     ln -s /lib/systemd/system/raspberrypi-net-mods.service ${PKG_PKGPATH}/etc/systemd/system/multi-user.target.wants/"
-PKG_DEPS="lfs/rfkill_1.0"
+PKG_DEPS="lfs/rfkill"
