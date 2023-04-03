@@ -42,3 +42,7 @@ case ${KERNEL_ARCH:-none} in
 esac
 PKG_KERNEL_INITRAMFS=1
 PKG_KERNEL_INITRAMFS_DRIVERS=
+if [ "${GCC_DEFAULT_LD}" == gold ]
+then
+	GCC_DEFAULT_LD=bfd
+fi
