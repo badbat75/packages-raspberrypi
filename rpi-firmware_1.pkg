@@ -1,7 +1,7 @@
 # rpi-firmware_1
-PKG_SUFFIX=.20230317
+PKG_SUFFIX=.20240424
 PKG_URL="https://github.com/raspberrypi/firmware/archive/refs/tags/1${PKG_SUFFIX}.tar.gz"
 BUILD_PROCESS=downloadonly
-PKG_PREBUILD="mkdir -pv ${PKG_PKGPATH}/boot
+PKG_PREBUILD="mkdir -pv \${PKG_PKGPATH}/boot
 	cp -fv boot/{bootcode.bin,fixup4cd.dat,fixup4.dat,fixup4db.dat,fixup4x.dat,fixup_cd.dat,fixup.dat,fixup_db.dat,fixup_x.dat,\
-LICENCE.broadcom,start4cd.elf,start4db.elf,start4.elf,start4x.elf,start_cd.elf,start_db.elf,start.elf,start_x.elf} ${PKG_PKGPATH}/boot"
+LICENCE.broadcom,start4cd.elf,start4db.elf,start4.elf,start4x.elf,start_cd.elf,start_db.elf,start.elf,start_x.elf} \${PKG_PKGPATH}/boot"

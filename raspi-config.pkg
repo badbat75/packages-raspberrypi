@@ -1,9 +1,9 @@
 # raspi-config
-PKG_SUFFIX=".20221214"
-PKG_URL="https://github.com/RPi-Distro/raspi-config/archive/0fc1f9552fc99332d57e3b6df20c64576466913a.tar.gz"
+PKG_SUFFIX=".20240521"
+PKG_URL="https://github.com/RPi-Distro/raspi-config/archive/110f69f2469f53a38fa7bb8654da846bc0a1ca24.tar.gz"
 BUILD_PROCESS=downloadonly
-PKG_PREBUILD="install -d -m755 ${PKG_PKGPATH}{/usr/bin,/etc/systemd/system}
-    install -m755 raspi-config ${PKG_PKGPATH}/usr/bin
-    install -m644 autologin@.service ${PKG_PKGPATH}/etc/systemd/system
-    find usr/lib -type f -exec install -v -D -m755 \"{}\" \"${PKG_PKGPATH}/{}\" \;
-    find usr/share etc -type f -exec install -v -D -m644 \"{}\" \"${PKG_PKGPATH}/{}\" \;"
+PKG_PREBUILD="install -d -m755 \${PKG_PKGPATH}{/usr/bin,/etc/systemd/system}
+    install -m755 raspi-config \${PKG_PKGPATH}/usr/bin
+    install -m644 autologin@.service \${PKG_PKGPATH}/etc/systemd/system
+    find usr/lib -type f -exec install -v -D -m755 \"{}\" \"\${PKG_PKGPATH}/{}\" \;
+    find usr/share etc -type f -exec install -v -D -m644 \"{}\" \"\${PKG_PKGPATH}/{}\" \;"

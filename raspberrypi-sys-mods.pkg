@@ -1,20 +1,19 @@
 # raspberrypi-sys-mods
-PKG_SUFFIX=".20230329"
-PKG_URL="https://github.com/RPi-Distro/raspberrypi-sys-mods/archive/346005ccd2b7c9975a60c8b13d84cbbf0ddff859.tar.gz"
+PKG_SUFFIX=".20240527"
+PKG_URL="https://github.com/RPi-Distro/raspberrypi-sys-mods/archive/6a0d861f566d3537a290164b3918c87352cb4949.tar.gz"
 BUILD_PROCESS=downloadonly
-PKG_PREBUILD="install -d -m755 ${PKG_PKGPATH}/etc/udev/rules.d
-    install -m644 etc.armhf/udev/rules.d/99-com.rules ${PKG_PKGPATH}/etc/udev/rules.d/
-    install -d -m755 ${PKG_PKGPATH}/lib/systemd/system
-    install -v -D -m644 debian/raspberrypi-sys-mods.apply_noobs_os_config.service ${PKG_PKGPATH}/lib/systemd/system/apply_noobs_os_config.service
-    install -v -D -m644 debian/raspberrypi-sys-mods.regenerate_ssh_host_keys.service ${PKG_PKGPATH}/lib/systemd/system/regenerate_ssh_host_keys.service
-    install -v -D -m644 debian/raspberrypi-sys-mods.rpi-display-backlight.service ${PKG_PKGPATH}/lib/systemd/system/rpi-display-backlight.service
-    install -v -D -m644 debian/raspberrypi-sys-mods.sshswitch.service ${PKG_PKGPATH}/lib/systemd/system/sshswitch.service
-    install -d -m755 ${PKG_PKGPATH}/etc/systemd/system/multi-user.target.wants
-    ln -s /lib/systemd/system/rpi-display-backlight.service ${PKG_PKGPATH}/etc/systemd/system/multi-user.target.wants/rpi-display-backlight.service
-    ln -s /lib/systemd/system/regenerate_ssh_host_keys.service ${PKG_PKGPATH}/etc/systemd/system/multi-user.target.wants/regenerate_ssh_host_keys.service
-    ln -s /lib/systemd/system/sshswitch.service ${PKG_PKGPATH}/etc/systemd/system/multi-user.target.wants/sshswitch.service
-    #install -d -m755 ${PKG_PKGPATH}/etc/sudoers.d
-    #echo 'pi ALL=(ALL) NOPASSWD: ALL' > ${PKG_PKGPATH}/etc/sudoers.d/010_pi-nopasswd
+PKG_PREBUILD="install -d -m755 \${PKG_PKGPATH}/etc/udev/rules.d
+    install -m644 etc.armhf/udev/rules.d/99-com.rules \${PKG_PKGPATH}/etc/udev/rules.d/
+    install -d -m755 \${PKG_PKGPATH}/lib/systemd/system
+    install -v -D -m644 debian/raspberrypi-sys-mods.regenerate_ssh_host_keys.service \${PKG_PKGPATH}/lib/systemd/system/regenerate_ssh_host_keys.service
+    install -v -D -m644 debian/raspberrypi-sys-mods.rpi-display-backlight.service \${PKG_PKGPATH}/lib/systemd/system/rpi-display-backlight.service
+    install -v -D -m644 debian/raspberrypi-sys-mods.sshswitch.service \${PKG_PKGPATH}/lib/systemd/system/sshswitch.service
+    install -d -m755 \${PKG_PKGPATH}/etc/systemd/system/multi-user.target.wants
+    ln -s /lib/systemd/system/rpi-display-backlight.service \${PKG_PKGPATH}/etc/systemd/system/multi-user.target.wants/rpi-display-backlight.service
+    ln -s /lib/systemd/system/regenerate_ssh_host_keys.service \${PKG_PKGPATH}/etc/systemd/system/multi-user.target.wants/regenerate_ssh_host_keys.service
+    ln -s /lib/systemd/system/sshswitch.service \${PKG_PKGPATH}/etc/systemd/system/multi-user.target.wants/sshswitch.service
+    #install -d -m755 \${PKG_PKGPATH}/etc/sudoers.d
+    #echo 'pi ALL=(ALL) NOPASSWD: ALL' > \${PKG_PKGPATH}/etc/sudoers.d/010_pi-nopasswd
    "
 PKG_POSTINSTALL="groupadd --system i2c
 groupadd --system spi

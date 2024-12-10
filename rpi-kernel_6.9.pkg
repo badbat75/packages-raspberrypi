@@ -1,10 +1,11 @@
-# rpi-kernel_6.2
-PKG_SUFFIX=.8
-PKG_URL="https://github.com/raspberrypi/linux/archive/ac2e77f84a6a02c07f094f0857bec98de4e8a03c.tar.gz"
-PKG_DEPS="lfs/elfutils:cross lfs/dracut"
+# rpi-kernel_6.9
+PKG_SUFFIX=.1
+PKG_URL="https://github.com/raspberrypi/linux/archive/6466903a6a8f74447c0cbc12ad914b53978a885f.tar.gz"
+PKG_DEPS="lfs/bison:native lfs/flex:native lfs/elfutils:cross lfs/dracut"
 BUILD_PROCESS=kernelbuild
 PKG_MAKEVARS="INSTALL_MOD_STRIP=1"
 CONF_FLAGS="-d WERROR"
+CONF_FLAGS+=" -d DEBUG_INFO_BTF"
 ### To enable systemd oom support
 CONF_FLAGS+=" -e MEMCG -e PSI"
 ### To enable systemd iptables support
@@ -21,7 +22,7 @@ case ${WITH_RT:-0} in
 	yes|1)
 	# Enable preemptive/realtime kernel
 		CONF_FLAGS+=" -d PREEMPT_NONE -d PREEMPT_VOLUNTARY -e PREEMPT"
-		;;
+	;;
 esac
 
 case ${KERNEL_ARCH:-none} in
@@ -32,17 +33,16 @@ case ${KERNEL_ARCH:-none} in
 		PKG_POSTBUILD+="
 			for p in broadcom
 			do
-				if [ -d ${PKG_PKGPATH}/boot/\${p} ]
+				if [ -d \${PKG_PKGPATH}/boot/\${p} ]
 				then
-					mv -f ${PKG_PKGPATH}/boot/\${p}/* ${PKG_PKGPATH}/boot/
-					rmdir ${PKG_PKGPATH}/boot/\${p}
+					mv -f \${PKG_PKGPATH}/boot/\${p}/* \${PKG_PKGPATH}/boot/
+					rmdir \${PKG_PKGPATH}/boot/\${p}
 				fi
 			done"
 		;;
 esac
 PKG_KERNEL_INITRAMFS=1
 PKG_KERNEL_INITRAMFS_DRIVERS=
-if [ "${GCC_DEFAULT_LD}" == gold ]
-then
-	GCC_DEFAULT_LD=bfd
-fi
+case ${TOOLCHAIN} in
+	gnu) PKG_OVERRIDELD=bfd;;
+esac
