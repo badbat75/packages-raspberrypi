@@ -6,4 +6,6 @@
 groupadd --system i2c
 groupadd --system spi
 groupadd --system gpio
-systemctl disable regenerate_ssh_host_keys.service apply_noobs_os_config
+### apply_noobs_os_config.service is gone from the sources (only the udev rule of NOOBS is left): a unit
+### systemctl does not find makes the whole disable fail
+systemctl disable regenerate_ssh_host_keys.service
