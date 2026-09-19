@@ -1,0 +1,38 @@
+The device tree strings under /proc/device-tree end with a NUL byte. Raspberry Pi OS runs these
+scripts with dash, which drops it silently; with bash as /bin/sh every command substitution over
+them logs "warning: command substitution: ignored null byte in input" (bthelper@hci0.service at
+every boot). tr removes the byte before the shell sees it.
+
+--- a/usr/bin/bthelper
++++ b/usr/bin/bthelper
+@@ -19,7 +19,7 @@
+ fi
+
+ if ( /usr/bin/hcitool -i $dev dev | grep -q -E '\s43:4[35]:|AA:AA:AA:AA:AA:AA' ); then
+-    SERIAL=`cat /proc/device-tree/serial-number | cut -c9-`
++    SERIAL=`tr -d '\0' < /proc/device-tree/serial-number | cut -c9-`
+     B1=`echo $SERIAL | cut -c3-4`
+     B2=`echo $SERIAL | cut -c5-6`
+     B3=`echo $SERIAL | cut -c7-8`
+--- a/usr/bin/btuart
++++ b/usr/bin/btuart
+@@ -4,7 +4,7 @@
+ if grep -q "raspberrypi,4" /proc/device-tree/compatible; then
+   BDADDR=
+ else
+-  SERIAL=`cat /proc/device-tree/serial-number | cut -c9-`
++  SERIAL=`tr -d '\0' < /proc/device-tree/serial-number | cut -c9-`
+   B1=`echo $SERIAL | cut -c3-4`
+   B2=`echo $SERIAL | cut -c5-6`
+   B3=`echo $SERIAL | cut -c7-8`
+@@ -17,8 +17,8 @@
+   exit 0
+ fi
+
+-uart0="`cat /proc/device-tree/aliases/uart0`"
+-serial1="`cat /proc/device-tree/aliases/serial1`"
++uart0="`tr -d '\0' < /proc/device-tree/aliases/uart0`"
++serial1="`tr -d '\0' < /proc/device-tree/aliases/serial1`"
+
+ if [ "$uart0" = "$serial1" ] ; then
+ 	uart0_pins="`wc -c /proc/device-tree/soc/gpio@7e200000/uart0_pins/brcm\,pins | cut -f 1 -d ' '`"
