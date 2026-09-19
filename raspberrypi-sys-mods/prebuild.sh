@@ -16,5 +16,11 @@ install -d -m755 ${PKG_PKGPATH}/etc/udev/rules.d
     install -d -m755 ${PKG_PKGPATH}/etc/systemd/system/multi-user.target.wants
     ln -s /lib/systemd/system/regenerate_ssh_host_keys.service ${PKG_PKGPATH}/etc/systemd/system/multi-user.target.wants/regenerate_ssh_host_keys.service
     ln -s /lib/systemd/system/sshswitch.service ${PKG_PKGPATH}/etc/systemd/system/multi-user.target.wants/sshswitch.service
+    ### The module options of the board (SYSMODS_MODPROBE_CONF, set by the platform variants). The
+    ### etc/modprobe.d/rfkill_default.conf of the sources stays out: it blocks the radios until raspi-config sets a country
+    for MODPROBE_CONF in ${SYSMODS_MODPROBE_CONF}
+    do
+        install -v -D -m644 ${PKG_RECIPEPATH}/files/${MODPROBE_CONF} ${PKG_PKGPATH}/usr/lib/modprobe.d/${MODPROBE_CONF}
+    done
     #install -d -m755 ${PKG_PKGPATH}/etc/sudoers.d
     #echo 'pi ALL=(ALL) NOPASSWD: ALL' > ${PKG_PKGPATH}/etc/sudoers.d/010_pi-nopasswd
