@@ -1,0 +1,5 @@
+# The mailbox and the memory of the VideoCore, for the video group: vcgencmd, vcmailbox and vclog of
+# rpi-utils open /dev/vcio, and no other rule of the image sets the ownership of these devices.
+KERNEL=="vcio", GROUP="video", MODE="0660"
+KERNEL=="vc-mem", GROUP="video", MODE="0660"
+KERNEL=="vchiq", GROUP="video", MODE="0660"
