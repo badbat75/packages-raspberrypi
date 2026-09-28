@@ -1,0 +1,30 @@
+Clang LTO on arm (ARCH_SUPPORTS_LTO_CLANG, which prebuild.sh selects and upstream does not): the
+objects that are not linked into vmlinux leave the flags of LTO out, as on arm64.
+- the decompressor: its objects were LLVM bitcode, the link internalized free_mem_ptr, malloc_ptr,
+  output_data... and check_for_bad_syms stopped the build ("following symbols must have non
+  local/private scope").
+- the vdso (ARMv7), linked as a shared object of its own.
+
+--- a/arch/arm/boot/compressed/Makefile
++++ b/arch/arm/boot/compressed/Makefile
+@@ -98,6 +98,8 @@
+ 	     $(DISABLE_KSTACK_ERASE) \
+ 	     -I$(obj)
+ ccflags-remove-$(CONFIG_FUNCTION_TRACER) += -pg
++# LLVM bitcode would reach the link of the decompressor, which internalizes its globals
++ccflags-remove-y += $(CC_FLAGS_LTO)
+ asflags-y := -DZIMAGE
+ 
+ # Supply kernel BSS size to the decompressor via a linker symbol.
+--- a/arch/arm/vdso/Makefile
++++ b/arch/arm/vdso/Makefile
+@@ -26,7 +26,8 @@
+ CFLAGS_REMOVE_vdso.o = -pg
+ 
+ # Force -O2 to avoid libgcc dependencies
+-CFLAGS_REMOVE_vgettimeofday.o = -pg -Os $(RANDSTRUCT_CFLAGS) $(KSTACK_ERASE_CFLAGS) $(GCC_PLUGINS_CFLAGS)
++CFLAGS_REMOVE_vgettimeofday.o = -pg -Os $(RANDSTRUCT_CFLAGS) $(KSTACK_ERASE_CFLAGS) $(GCC_PLUGINS_CFLAGS) \
++				$(CC_FLAGS_LTO)
+ ifeq ($(c-gettimeofday-y),)
+ CFLAGS_vgettimeofday.o = -O2
+ else
