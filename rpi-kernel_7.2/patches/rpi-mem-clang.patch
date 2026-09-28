@@ -1,0 +1,276 @@
+The optimized memcpy/memmove/memset/memcmp of BCM2835_FAST_MEMCPY (ARMv6, Pi 1 and Zero), from
+arm-mem, for the integrated assembler of clang:
+- the divided syntax (ldrmib, ldrcsh, ldmcsia, adceqs), which binutils accepts after the
+  ".syntax unified" of asm/unified.h and clang refuses, in the unified spelling (ldrbmi, ldrhcs,
+  ldmiacs, adcseq): the same encodings with both assemblers.
+- the medium case of the memcpy macro passes "align", which is not one of its parameters: binutils
+  makes it an undefined symbol (U align in memcpy_rpi.o) and takes the unaligned branch of
+  memcpy_leading_15bytes, clang stops ("expected absolute expression"). 1, as in the long case:
+  the alignment of the source is not known there, and binutils writes the same code.
+
+--- a/arch/arm/lib/arm-mem.h
++++ b/arch/arm/lib/arm-mem.h
+@@ -101,7 +101,7 @@
+         mov     tmp, base, lsl #32-5
+  .endif
+         adds    tmp, tmp, remain, lsl #32-5
+-        adceqs  tmp, tmp, #0
++        adcseq  tmp, tmp, #0
+         /* The instruction above has two effects: ensures Z is only
+          * set if C was clear (so Z indicates that both shifted quantities
+          * were 0), and clears C if Z was set (so C indicates that the sum
+--- a/arch/arm/lib/memcmp_rpi.S
++++ b/arch/arm/lib/memcmp_rpi.S
+@@ -63,10 +63,10 @@
+ 
+ .macro memcmp_leading_31bytes
+         movs    DAT0, OFF, lsl #31
+-        ldrmib  DAT0, [S_1], #1
+-        ldrcsh  DAT1, [S_1], #2
+-        ldrmib  DAT4, [S_2], #1
+-        ldrcsh  DAT5, [S_2], #2
++        ldrbmi  DAT0, [S_1], #1
++        ldrhcs  DAT1, [S_1], #2
++        ldrbmi  DAT4, [S_2], #1
++        ldrhcs  DAT5, [S_2], #2
+         movpl   DAT0, #0
+         movcc   DAT1, #0
+         movpl   DAT4, #0
+@@ -81,7 +81,7 @@
+         ldrcs   DAT1, [S_1], #4
+         ldrcs   DAT2, [S_1], #4
+         ldrmi   DAT4, [S_2], #4
+-        ldmcsia S_2!, {DAT5, DAT6}
++        ldmiacs S_2!, {DAT5, DAT6}
+         movpl   DAT0, #0
+         movcc   DAT1, #0
+         movcc   DAT2, #0
+@@ -108,10 +108,10 @@
+         ldrcs   DAT0, [S_1], #4
+         ldrcs   DAT1, [S_1], #4
+  .else
+-        ldmcsia S_1!, {DAT0, DAT1}
++        ldmiacs S_1!, {DAT0, DAT1}
+  .endif
+         ldrmi   DAT2, [S_1], #4
+-        ldmcsia S_2!, {DAT4, DAT5}
++        ldmiacs S_2!, {DAT4, DAT5}
+         ldrmi   DAT6, [S_2], #4
+         movcc   DAT0, #0
+         movcc   DAT1, #0
+@@ -124,10 +124,10 @@
+         cmpeq   DAT2, DAT6
+         bne     200f
+         movs    N, N, lsl #2
+-        ldrcsh  DAT0, [S_1], #2
+-        ldrmib  DAT1, [S_1]
+-        ldrcsh  DAT4, [S_2], #2
+-        ldrmib  DAT5, [S_2]
++        ldrhcs  DAT0, [S_1], #2
++        ldrbmi  DAT1, [S_1]
++        ldrhcs  DAT4, [S_2], #2
++        ldrbmi  DAT5, [S_2]
+         movcc   DAT0, #0
+         movpl   DAT1, #0
+         movcc   DAT4, #0
+--- a/arch/arm/lib/memcpymove.h
++++ b/arch/arm/lib/memcpymove.h
+@@ -140,37 +140,37 @@
+         movs    DAT1, DAT2, lsl #31
+         sub     N, N, DAT2
+  .if backwards
+-        ldrmib  DAT0, [S, #-1]!
+-        ldrcsh  DAT1, [S, #-2]!
+-        strmib  DAT0, [D, #-1]!
+-        strcsh  DAT1, [D, #-2]!
+- .else
+-        ldrmib  DAT0, [S], #1
+-        ldrcsh  DAT1, [S], #2
+-        strmib  DAT0, [D], #1
+-        strcsh  DAT1, [D], #2
++        ldrbmi  DAT0, [S, #-1]!
++        ldrhcs  DAT1, [S, #-2]!
++        strbmi  DAT0, [D, #-1]!
++        strhcs  DAT1, [D, #-2]!
++ .else
++        ldrbmi  DAT0, [S], #1
++        ldrhcs  DAT1, [S], #2
++        strbmi  DAT0, [D], #1
++        strhcs  DAT1, [D], #2
+  .endif
+         movs    DAT1, DAT2, lsl #29
+  .if backwards
+         ldrmi   DAT0, [S, #-4]!
+   .if align == 0
+-        ldmcsdb S!, {DAT1, DAT2}
++        ldmdbcs S!, {DAT1, DAT2}
+   .else
+         ldrcs   DAT2, [S, #-4]!
+         ldrcs   DAT1, [S, #-4]!
+   .endif
+         strmi   DAT0, [D, #-4]!
+-        stmcsdb D!, {DAT1, DAT2}
++        stmdbcs D!, {DAT1, DAT2}
+  .else
+         ldrmi   DAT0, [S], #4
+   .if align == 0
+-        ldmcsia S!, {DAT1, DAT2}
++        ldmiacs S!, {DAT1, DAT2}
+   .else
+         ldrcs   DAT1, [S], #4
+         ldrcs   DAT2, [S], #4
+   .endif
+         strmi   DAT0, [D], #4
+-        stmcsia D!, {DAT1, DAT2}
++        stmiacs D!, {DAT1, DAT2}
+  .endif
+ .endm
+ 
+@@ -178,36 +178,36 @@
+         movs    N, N, lsl #29
+  .if backwards
+   .if align == 0
+-        ldmcsdb S!, {DAT0, DAT1}
++        ldmdbcs S!, {DAT0, DAT1}
+   .else
+         ldrcs   DAT1, [S, #-4]!
+         ldrcs   DAT0, [S, #-4]!
+   .endif
+         ldrmi   DAT2, [S, #-4]!
+-        stmcsdb D!, {DAT0, DAT1}
++        stmdbcs D!, {DAT0, DAT1}
+         strmi   DAT2, [D, #-4]!
+  .else
+   .if align == 0
+-        ldmcsia S!, {DAT0, DAT1}
++        ldmiacs S!, {DAT0, DAT1}
+   .else
+         ldrcs   DAT0, [S], #4
+         ldrcs   DAT1, [S], #4
+   .endif
+         ldrmi   DAT2, [S], #4
+-        stmcsia D!, {DAT0, DAT1}
++        stmiacs D!, {DAT0, DAT1}
+         strmi   DAT2, [D], #4
+  .endif
+         movs    N, N, lsl #2
+  .if backwards
+-        ldrcsh  DAT0, [S, #-2]!
+-        ldrmib  DAT1, [S, #-1]
+-        strcsh  DAT0, [D, #-2]!
+-        strmib  DAT1, [D, #-1]
+- .else
+-        ldrcsh  DAT0, [S], #2
+-        ldrmib  DAT1, [S]
+-        strcsh  DAT0, [D], #2
+-        strmib  DAT1, [D]
++        ldrhcs  DAT0, [S, #-2]!
++        ldrbmi  DAT1, [S, #-1]
++        strhcs  DAT0, [D, #-2]!
++        strbmi  DAT1, [D, #-1]
++ .else
++        ldrhcs  DAT0, [S], #2
++        ldrbmi  DAT1, [S]
++        strhcs  DAT0, [D], #2
++        strbmi  DAT1, [D]
+  .endif
+ .endm
+ 
+@@ -259,11 +259,11 @@
+         tst     N, #16
+  .if align == 0
+   .if backwards
+-        ldmnedb S!, {DAT0, DAT1, DAT2, LAST}
+-        stmnedb D!, {DAT0, DAT1, DAT2, LAST}
++        ldmdbne S!, {DAT0, DAT1, DAT2, LAST}
++        stmdbne D!, {DAT0, DAT1, DAT2, LAST}
+   .else
+-        ldmneia S!, {DAT0, DAT1, DAT2, LAST}
+-        stmneia D!, {DAT0, DAT1, DAT2, LAST}
++        ldmiane S!, {DAT0, DAT1, DAT2, LAST}
++        stmiane D!, {DAT0, DAT1, DAT2, LAST}
+   .endif
+  .else
+         beq     130f
+@@ -319,24 +319,24 @@
+         tst     N, #16
+  .if backwards
+   .if align == 0
+-        ldmnedb S!, {DAT0, DAT1, DAT2, LAST}
++        ldmdbne S!, {DAT0, DAT1, DAT2, LAST}
+   .else
+         ldrne   LAST, [S, #-4]!
+         ldrne   DAT2, [S, #-4]!
+         ldrne   DAT1, [S, #-4]!
+         ldrne   DAT0, [S, #-4]!
+   .endif
+-        stmnedb D!, {DAT0, DAT1, DAT2, LAST}
++        stmdbne D!, {DAT0, DAT1, DAT2, LAST}
+  .else
+   .if align == 0
+-        ldmneia S!, {DAT0, DAT1, DAT2, LAST}
++        ldmiane S!, {DAT0, DAT1, DAT2, LAST}
+   .else
+         ldrne   DAT0, [S], #4
+         ldrne   DAT1, [S], #4
+         ldrne   DAT2, [S], #4
+         ldrne   LAST, [S], #4
+   .endif
+-        stmneia D!, {DAT0, DAT1, DAT2, LAST}
++        stmiane D!, {DAT0, DAT1, DAT2, LAST}
+  .endif
+         memcpy_trailing_15bytes  backwards, align
+ 199:
+@@ -440,7 +440,7 @@
+         beq     164f
+         rsb     DAT2, DAT2, #16
+  .endif
+-        memcpy_leading_15bytes backwards, align
++        memcpy_leading_15bytes backwards, 1
+ 164:    /* Destination now 16-byte aligned; we have at least one 16-byte output block */
+         tst     S, #3
+         bne     140f
+--- a/arch/arm/lib/memset_rpi.S
++++ b/arch/arm/lib/memset_rpi.S
+@@ -81,14 +81,14 @@
+         rsb     DAT3, S, #0   /* bits 0-3 = number of leading bytes until aligned */
+         movs    DAT2, DAT3, lsl #31
+         submi   N, N, #1
+-        strmib  DAT0, [S], #1
++        strbmi  DAT0, [S], #1
+         subcs   N, N, #2
+-        strcsh  DAT0, [S], #2
++        strhcs  DAT0, [S], #2
+         movs    DAT2, DAT3, lsl #29
+         submi   N, N, #4
+         strmi   DAT0, [S], #4
+         subcs   N, N, #8
+-        stmcsia S!, {DAT0, DAT1}
++        stmiacs S!, {DAT0, DAT1}
+ 164:    /* Delayed set up of DAT2 and DAT3 so we could use them as scratch registers above */
+         mov     DAT2, DAT0
+         mov     DAT3, DAT1
+@@ -98,11 +98,11 @@
+         bhs     165b
+ 166:    /* Trailing words and bytes */
+         movs    N, N, lsl #29
+-        stmcsia S!, {DAT0, DAT1}
++        stmiacs S!, {DAT0, DAT1}
+         strmi   DAT0, [S], #4
+         movs    N, N, lsl #2
+-        strcsh  DAT0, [S], #2
+-        strmib  DAT0, [S]
++        strhcs  DAT0, [S], #2
++        strbmi  DAT0, [S]
+ 199:    pop     {S, pc}
+ 
+ 170:    /* Short case */
+@@ -116,7 +116,7 @@
+         tst     S, #3
+         bne     172b
+ 174:    tst     N, #16
+-        stmneia S!, {DAT0, DAT1, DAT2, DAT3}
++        stmiane S!, {DAT0, DAT1, DAT2, DAT3}
+         b       166b
+ 
+         .unreq  S
