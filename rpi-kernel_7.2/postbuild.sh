@@ -18,11 +18,25 @@ then
 	rm -fv "${BIN_PATH}/postinst_scripts/99_kernel"
 fi
 
-### The firmware of the Raspberry Pi reads the device tree of the board from the root of the boot
-### partition (and emulator_cmdgen QEMU_DTB from ${BIN_PATH}/boot): dtbs_install of arm64 puts it in
-### the directory of the vendor, broadcom/
-if [ -d "${PKG_PKGPATH}/boot/broadcom" ]
+### The boot partition is /boot/firmware, as on Raspberry Pi OS: /boot keeps vmlinuz-<release>,
+### System.map-<release>, config-<release> and initramfs-<release>.img of kernelbuild and dracut, the
+### firmware reads copies of the kernel and of the initramfs under its own names (KERNEL_NAME of the
+### platform, kernel8.img, and the initramfs auto_initramfs=1 of config.txt looks for next to it,
+### initramfs8), and the device trees and overlays/ (emulator_cmdgen QEMU_DTB from ${BIN_PATH}/boot, the
+### overlays next to it). dtbs_install of arm64 puts the device trees in the directory of the vendor,
+### broadcom/: the firmware wants them in the root of the partition. A FAT file system: copies, no links
+KERNEL_RELEASE=$(cat include/config/kernel.release)
+FIRMWARE_PATH=${PKG_PKGPATH}/boot/firmware
+mkdir -pv "${FIRMWARE_PATH}"
+cp -v "${PKG_PKGPATH}/boot/vmlinuz-${KERNEL_RELEASE}" "${FIRMWARE_PATH}/${KERNEL_NAME}"
+if [ -f "${PKG_PKGPATH}/boot/initramfs-${KERNEL_RELEASE}.img" ]
 then
-	mv -v "${PKG_PKGPATH}"/boot/broadcom/*.dtb "${PKG_PKGPATH}/boot/"
-	rmdir -v "${PKG_PKGPATH}/boot/broadcom"
+	FIRMWARE_INITRAMFS=${KERNEL_NAME%.img}
+	cp -v "${PKG_PKGPATH}/boot/initramfs-${KERNEL_RELEASE}.img" "${FIRMWARE_PATH}/${FIRMWARE_INITRAMFS/kernel/initramfs}"
 fi
+find "${PKG_PKGPATH}/boot" -maxdepth 2 -name '*.dtb' -exec mv -vt "${FIRMWARE_PATH}/" {} +
+rmdir -v "${PKG_PKGPATH}/boot/broadcom" 2>/dev/null || true
+mv -v "${PKG_PKGPATH}/boot/overlays" "${FIRMWARE_PATH}/"
+### optimize-initramfs.sh of lfs/lfs-utils makes the initramfs of /boot again on the board: this hook
+### refreshes the copy the firmware reads
+install -v -D -m755 "${PKG_RECIPEPATH}/files/rpi-firmware-initramfs" "${PKG_PKGPATH}/etc/initramfs/post-update.d/rpi-firmware-initramfs"

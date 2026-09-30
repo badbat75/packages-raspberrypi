@@ -1,0 +1,18 @@
+#!/bin/sh
+# rpi-firmware-initramfs <release> <initramfs>: the initramfs a program made again for a kernel, copied
+# to /boot/firmware for the firmware of the Raspberry Pi (raspberrypi/rpi-kernel). A kernel of
+# /boot/firmware that is vmlinuz-<release> of /boot gets it under the name auto_initramfs=1 of
+# config.txt looks for next to it: kernel8.img initramfs8, kernel_2712.img initramfs_2712
+set -e
+RELEASE=${1}
+INITRAMFS=${2}
+for KERNEL in /boot/firmware/kernel*.img
+do
+	[ -f "${KERNEL}" ] || continue
+	cmp -s "${KERNEL}" "/boot/vmlinuz-${RELEASE}" || continue
+	NAME=$(basename "${KERNEL}" .img)
+	### Written aside and renamed: a power loss in the middle leaves the previous one in place
+	cp -f "${INITRAMFS}" "/boot/firmware/${NAME}.new"
+	mv -f "/boot/firmware/${NAME}.new" "/boot/firmware/initramfs${NAME#kernel}"
+	echo "initramfs of ${RELEASE}: copied to /boot/firmware/initramfs${NAME#kernel}"
+done
