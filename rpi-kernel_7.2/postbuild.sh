@@ -34,7 +34,8 @@ then
 	FIRMWARE_INITRAMFS=${KERNEL_NAME%.img}
 	cp -v "${PKG_PKGPATH}/boot/initramfs-${KERNEL_RELEASE}.img" "${FIRMWARE_PATH}/${FIRMWARE_INITRAMFS/kernel/initramfs}"
 fi
-find "${PKG_PKGPATH}/boot" -maxdepth 2 -name '*.dtb' -exec mv -vt "${FIRMWARE_PATH}/" {} +
+### The device trees of the boards only: overlays/ has its own (overlay_map.dtb, hat_map.dtb)
+find "${PKG_PKGPATH}/boot" "${PKG_PKGPATH}/boot/broadcom" -maxdepth 1 -name '*.dtb' -exec mv -vt "${FIRMWARE_PATH}/" {} + 2>/dev/null || true
 rmdir -v "${PKG_PKGPATH}/boot/broadcom" 2>/dev/null || true
 mv -v "${PKG_PKGPATH}/boot/overlays" "${FIRMWARE_PATH}/"
 ### optimize-initramfs.sh of lfs/lfs-utils makes the initramfs of /boot again on the board: this hook
