@@ -17,3 +17,12 @@ then
 	### The post install script that made it inside the image, left in the sysroot by earlier builds
 	rm -fv "${BIN_PATH}/postinst_scripts/99_kernel"
 fi
+
+### The firmware of the Raspberry Pi reads the device tree of the board from the root of the boot
+### partition (and emulator_cmdgen QEMU_DTB from ${BIN_PATH}/boot): dtbs_install of arm64 puts it in
+### the directory of the vendor, broadcom/
+if [ -d "${PKG_PKGPATH}/boot/broadcom" ]
+then
+	mv -v "${PKG_PKGPATH}"/boot/broadcom/*.dtb "${PKG_PKGPATH}/boot/"
+	rmdir -v "${PKG_PKGPATH}/boot/broadcom"
+fi
