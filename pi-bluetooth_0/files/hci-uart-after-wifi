@@ -4,9 +4,11 @@
 # ("we were short of pins", raspberrypi/firmware#1150): under interrupt load the PL011 drops bytes.
 # The heaviest load of the boot is brcmfmac loading the WiFi firmware over SDIO, at the moment
 # btbcm downloads the patch of the Bluetooth: the Bluetooth stops answering (command tx timeout)
-# until the chip is powered again. On that board only, the Bluetooth waits for the network device
-# of the WiFi, at most 10 seconds; the 3B+ and the later boards have flow control and do not wait.
-tr '\0' '\n' < /proc/device-tree/compatible 2>/dev/null | grep -qx 'raspberrypi,3-model-b' || exit 0
+# until the chip is powered again. The Zero W and the Zero 2 W have the same chip, with flow
+# control, and the same failure at some boots (raspberrypi/linux#6462). On these three boards the
+# Bluetooth waits for the network device of the WiFi, at most 10 seconds; the others do not wait.
+tr '\0' '\n' < /proc/device-tree/compatible 2>/dev/null |
+	grep -qx -e 'raspberrypi,3-model-b' -e 'raspberrypi,model-zero-w' -e 'raspberrypi,model-zero-2-w' || exit 0
 for FUNC in /sys/bus/sdio/devices/*:1
 do
 	[ "$(cat "${FUNC}/vendor" 2>/dev/null)" = 0x02d0 ] || continue
