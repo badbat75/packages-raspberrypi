@@ -1,10 +1,12 @@
 #!/bin/sh
 # hci-uart-after-wifi: run by modprobe before it loads hci_uart (/usr/lib/modprobe.d/pi-bluetooth.conf).
-# The Bluetooth of the Pi 3, Zero W and Zero 2 W is the same chip as the WiFi (BCM43430/CYW43438):
-# when brcmfmac starts the WiFi firmware while btbcm downloads the patch of the Bluetooth over the
-# UART, the Bluetooth stops answering (command tx timeout) until the chip is powered again. Both
-# load from the root file system at the same moment, so the Bluetooth waits for the network device
-# of the WiFi, at most 10 seconds. A board without a Broadcom SDIO WiFi does not wait.
+# The Raspberry Pi 3 Model B has no flow control between the SoC and the Bluetooth of its BCM43430
+# ("we were short of pins", raspberrypi/firmware#1150): under interrupt load the PL011 drops bytes.
+# The heaviest load of the boot is brcmfmac loading the WiFi firmware over SDIO, at the moment
+# btbcm downloads the patch of the Bluetooth: the Bluetooth stops answering (command tx timeout)
+# until the chip is powered again. On that board only, the Bluetooth waits for the network device
+# of the WiFi, at most 10 seconds; the 3B+ and the later boards have flow control and do not wait.
+tr '\0' '\n' < /proc/device-tree/compatible 2>/dev/null | grep -qx 'raspberrypi,3-model-b' || exit 0
 for FUNC in /sys/bus/sdio/devices/*:1
 do
 	[ "$(cat "${FUNC}/vendor" 2>/dev/null)" = 0x02d0 ] || continue
