@@ -3,8 +3,9 @@
 # raspberrypi-sys-mods: pre-build script, sourced by runprebuild.sh (cwd: ${PKG_SRCPATH}, set -x, no -e).
 # Every ALL_CAPS variable visible to package.env is available here as ${VAR}.
 
-install -d -m755 ${PKG_PKGPATH}/etc/udev/rules.d
-    install -m644 etc.armhf/udev/rules.d/99-com.rules ${PKG_PKGPATH}/etc/udev/rules.d/
+### 99-com.rules: the groups of the gpio, i2c, spi and videocore devices, the /dev/serial0 and
+    ### /dev/serial1 links. Upstream moved it from etc.armhf/udev to usr/lib/udev (20260928)
+    install -v -D -m644 usr/lib/udev/rules.d/99-com.rules ${PKG_PKGPATH}/usr/lib/udev/rules.d/99-com.rules
     ### The helpers the units and the udev rules run (sshswitch, get_fw_loc, i2cprobe, imager_custom).
     ### sshswitch enables ssh, the unit of Debian: the one of lfs/openssh is sshd
     install -v -d -m755 ${PKG_PKGPATH}/usr/lib/raspberrypi-sys-mods
