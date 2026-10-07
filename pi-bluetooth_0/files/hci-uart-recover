@@ -1,31 +1,22 @@
 #!/bin/sh
-# hci-uart-recover <hci device>: the OnFailure= of bthelper@<hci device> (bthelper-recover.conf).
+# hci-uart-recover <hci device>: the ExecStopPost= of bthelper@<hci device> (bthelper-recover.conf).
 # The Raspberry Pi 3 Model B has no flow control between the SoC and the Bluetooth of its BCM43430
 # (raspberrypi/firmware#1150): under load the PL011 drops bytes of a reply, the chip stops answering
-# (command tx timeout) and bthelper fails with "Can't init device hci0". The first boot, with its
-# daemon-reload and the rest of the first boot work, lost the 255 bytes of the local name that way
-# even after hci-uart-after-wifi. Only powering the chip again brings it back: unbinding the
-# serial device from hci_uart_bcm and binding it again does that (shutdown GPIO) and repeats the
-# initialisation; the new hci device starts bthelper again (90-pi-bluetooth.rules). At most three
-# times per boot, counted in /run.
+# (command tx timeout) and bthelper fails with "Can't init device hci0". The first boot of an image,
+# with its daemon-reload and the rest of the first boot work, lost the 255 bytes of the local name
+# that way. Only powering the chip again brings it back: unbinding the serial device from
+# hci_uart_bcm and binding it again does that (shutdown GPIO) and repeats the initialisation, then
+# systemd starts bthelper again (Restart=on-failure, StartLimitBurst= bounds the attempts).
 DEV=${1}
 DRIVER=/sys/bus/serial/drivers/hci_uart_bcm
-STATE=/run/pi-bluetooth
-SERDEV=$(basename "$(readlink -f "/sys/class/bluetooth/${DEV}/device")")
 
+### Only after a failure: a stop at shutdown leaves the Bluetooth alone
+[ "${SERVICE_RESULT}" = success ] && exit 0
+SERDEV=$(basename "$(readlink -f "/sys/class/bluetooth/${DEV}/device")")
 ### A Bluetooth on another bus (USB) or another driver is not this one
 [ -n "${DEV}" ] && [ -e "${DRIVER}/${SERDEV}" ] || exit 0
 
-mkdir -p "${STATE}"
-TRIES=$(cat "${STATE}/${SERDEV}" 2>/dev/null || echo 0)
-if [ "${TRIES}" -ge 3 ]
-then
-	echo "${DEV} did not answer after ${TRIES} restarts of ${SERDEV}: giving up"
-	exit 1
-fi
-TRIES=$((TRIES + 1))
-echo "${TRIES}" > "${STATE}/${SERDEV}"
-echo "${DEV} did not answer: restarting ${SERDEV} (attempt ${TRIES} of 3)"
+echo "${DEV} did not answer: powering ${SERDEV} again"
 echo "${SERDEV}" > "${DRIVER}/unbind"
 sleep 1
 echo "${SERDEV}" > "${DRIVER}/bind"

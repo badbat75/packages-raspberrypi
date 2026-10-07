@@ -1,7 +1,0 @@
-[Unit]
-Description=Restart the UART Bluetooth %I that did not answer
-After=bthelper@%i.service
-
-[Service]
-Type=oneshot
-ExecStart=/usr/lib/pi-bluetooth/hci-uart-recover %I

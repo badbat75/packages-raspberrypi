@@ -12,11 +12,6 @@ install -d -m0755 ${PKG_PKGPATH}${INSTALL_PREFIX}/bin
     install -m 0644 -D debian/pi-bluetooth.bthelper@.service ${PKG_PKGPATH}${INSTALL_SYSCONFDIR}/systemd/system/bthelper@.service
     install -m 0644 -D lib/udev/rules.d/90-pi-bluetooth.rules ${PKG_PKGPATH}/lib/udev/rules.d/90-pi-bluetooth.rules
     systemctl --root=${PKG_PKGPATH} enable hciuart
-    ### hci_uart after brcmfmac on the Pi 3 Model B, Zero W and Zero 2 W: their Bluetooth stops answering when the WiFi
-    ### firmware starts during its patch download (files/hci-uart-after-wifi)
-    install -v -D -m755 ${PKG_RECIPEPATH}/files/hci-uart-after-wifi ${PKG_PKGPATH}/usr/lib/pi-bluetooth/hci-uart-after-wifi
-    install -v -D -m644 ${PKG_RECIPEPATH}/files/pi-bluetooth.conf ${PKG_PKGPATH}/usr/lib/modprobe.d/pi-bluetooth.conf
-    ### A Bluetooth that stopped answering anyway is powered again when bthelper fails (files/hci-uart-recover)
+    ### A Bluetooth that stopped answering is powered again when bthelper fails (files/hci-uart-recover)
     install -v -D -m755 ${PKG_RECIPEPATH}/files/hci-uart-recover ${PKG_PKGPATH}/usr/lib/pi-bluetooth/hci-uart-recover
-    install -v -D -m644 ${PKG_RECIPEPATH}/files/hci-uart-recover@.service ${PKG_PKGPATH}/usr/lib/systemd/system/hci-uart-recover@.service
     install -v -D -m644 ${PKG_RECIPEPATH}/files/bthelper-recover.conf ${PKG_PKGPATH}${INSTALL_SYSCONFDIR}/systemd/system/bthelper@.service.d/recover.conf
